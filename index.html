@@ -332,11 +332,11 @@
                 showTyping(2000, () => {
                     addMessage("Here are some recommended vehicles based on your interests:", "agent");
                     
-                    // Staggered image reveals
-                    setTimeout(() => addMessage("https://i.imgur.com/GjY2X84.png", "agent", true), 600); 
-                    setTimeout(() => addMessage("https://i.imgur.com/7YV6GvB.png", "agent", true), 1400); 
+                    // Staggered local image reveals
+                    setTimeout(() => addMessage("images/corsair.png", "agent", true), 600); 
+                    setTimeout(() => addMessage("images/navigator.png", "agent", true), 1400); 
                     setTimeout(() => {
-                        addMessage("https://i.imgur.com/49mN0Yx.png", "agent", true); 
+                        addMessage("images/mkz.png", "agent", true); 
                         setTimeout(() => {
                             addMessage("<a href='#' style='color:#007aff'>Click to explore more inventory</a>", "agent");
                             chatState = 4;
