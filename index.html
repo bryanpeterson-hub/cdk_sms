@@ -313,10 +313,9 @@
         function openMessages() {
             showScreen('messages-app');
             if (chatState === 1) {
-                showTyping(1500, () => {
-                    addMessage("Whether you’re still considering the vehicle you viewed or exploring our latest arrivals, we’re here to help you find the perfect fit.<br><br>To help you decide, we're offering you an exclusive 48-hour extended test drive so you can truly experience how a Lincoln fits into your lifestyle.<br><br><strong>Schedule Your 48-Hour Extended Test Drive</strong>", "agent");
-                    chatState = 2;
-                });
+                // ADDED: First message appears instantly without typing delay
+                addMessage("Whether you’re still considering the vehicle you viewed or exploring our latest arrivals, we’re here to help you find the perfect fit.<br><br>To help you decide, we're offering you an exclusive 48-hour extended test drive so you can truly experience how a Lincoln fits into your lifestyle.<br><br><strong>Schedule Your 48-Hour Extended Test Drive</strong>", "agent");
+                chatState = 2;
             }
         }
 
@@ -336,7 +335,8 @@
                     setTimeout(() => addMessage("images/corsair.png", "agent", true), 600); 
                     setTimeout(() => addMessage("images/navigator.png", "agent", true), 1400); 
                     setTimeout(() => {
-                        addMessage("images/mkz.png", "agent", true); 
+                        // --- UPDATED: Nautilus replaces MKZ ---
+                        addMessage("images/nautilus.png", "agent", true); 
                         setTimeout(() => {
                             addMessage("<a href='#' style='color:#007aff'>Click to explore more inventory</a>", "agent");
                             chatState = 4;
