@@ -28,12 +28,13 @@
             width: 100%;
             height: 100px;
             cursor: pointer;
-            z-index: 10;
+            z-index: 100;
+            position: fixed;
+            left: 0;
         }
         
-        #hotspot-bottom {
-            display: none; /* Managed by JS */
-        }
+        #hotspot-top { top: 0; }
+        #hotspot-bottom { bottom: 0; display: none; }
 
         /* --- Mobile Device Frame --- */
         .mobile-frame {
@@ -131,7 +132,7 @@
             display: flex; justify-content: space-between; align-items: center;
             padding: 12px 20px; height: 22px; border-bottom: 1px solid #f0f0f0;
         }
-        .status-bar-time { font-size: 14px; font-weight: 600; }
+        .status-bar-time { font-size: 14px; font-weight: 600; color: #000; }
 
         .messages-header {
             padding: 15px 20px;
@@ -156,6 +157,7 @@
             padding: 12px 16px; border-radius: 18px;
             margin-bottom: 8px; max-width: 85%;
             font-size: 14px; line-height: 1.4;
+            word-wrap: break-word;
         }
 
         .agent { background-color: #f1f0f0; color: #000; align-self: flex-start; border-bottom-left-radius: 4px; }
@@ -170,6 +172,7 @@
 
         .chat-input-area {
             display: flex; padding: 15px; border-top: 1px solid #eee;
+            background: #fff;
         }
 
         #chat-input {
@@ -182,7 +185,26 @@
             font-weight: 600; margin-left: 10px; cursor: pointer;
         }
 
-        .typing-indicator { display: none; padding: 10px; font-style: italic; font-size: 12px; color: #999; }
+        /* --- Typing Indicator --- */
+        .typing-indicator {
+            display: none;
+            align-self: flex-start;
+            background-color: #f1f0f0;
+            padding: 12px 16px;
+            border-radius: 18px;
+            border-bottom-left-radius: 4px;
+            margin-bottom: 8px;
+        }
+
+        .dot-container { display: flex; align-items: center; gap: 4px; height: 14px; }
+        .dot { width: 6px; height: 6px; background: #999; border-radius: 50%; animation: bounce 1.4s infinite; }
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-6px); }
+        }
     </style>
 </head>
 <body>
@@ -194,15 +216,15 @@
 
             <div class="screen-content active" id="lock-screen-initial">
                 <div class="lock-screen-overlay">
-                    <h1 class="lock-time" id="lock-time-initial">01:14</h1>
-                    <h2 class="lock-date" id="lock-date-initial">FRI, APR 3</h2>
+                    <h1 class="lock-time">01:14</h1>
+                    <h2 class="lock-date">FRI, APR 3</h2>
                     <div class="lock-prompt">Swipe up to unlock</div>
                 </div>
             </div>
 
             <div class="screen-content" id="lock-screen-notification" onclick="openMessages()">
                 <div class="lock-screen-overlay">
-                    <h1 class="lock-time" id="lock-time-notify">01:14</h1>
+                    <h1 class="lock-time">01:14</h1>
                     <div class="notification-wrapper">
                         <div class="notification">
                             <div class="notification-header">
@@ -219,7 +241,7 @@
 
             <div class="screen-content" id="messages-app">
                 <div class="status-bar">
-                    <span class="status-bar-time" id="status-bar-time">1:14 PM</span>
+                    <span class="status-bar-time">1:14 PM</span>
                 </div>
                 <div class="messages-header">
                     <div class="avatar">LL</div>
@@ -227,7 +249,13 @@
                 </div>
 
                 <div class="chat-container" id="chat-container">
-                    <div class="typing-indicator" id="typing-indicator">Laura is typing...</div>
+                    <div class="typing-indicator" id="typing-indicator">
+                        <div class="dot-container">
+                            <div class="dot"></div>
+                            <div class="dot"></div>
+                            <div class="dot"></div>
+                        </div>
+                    </div>
                 </div>
 
                 <form class="chat-input-area" id="chat-form">
@@ -261,8 +289,18 @@
             } else {
                 bubble.innerHTML = text;
             }
-            chatContainer.appendChild(bubble);
+            // Insert before typing indicator to keep dots at bottom
+            chatContainer.insertBefore(bubble, typingIndicator);
             chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function showTyping(duration, callback) {
+            typingIndicator.style.display = 'block';
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            setTimeout(() => {
+                typingIndicator.style.display = 'none';
+                callback();
+            }, duration);
         }
 
         function showNotification() {
@@ -275,10 +313,10 @@
         function openMessages() {
             showScreen('messages-app');
             if (chatState === 1) {
-                setTimeout(() => {
+                showTyping(1500, () => {
                     addMessage("Whether you’re still considering the vehicle you viewed or exploring our latest arrivals, we’re here to help you find the perfect fit.<br><br>To help you decide, we're offering you an exclusive 48-hour extended test drive so you can truly experience how a Lincoln fits into your lifestyle.<br><br><strong>Schedule Your 48-Hour Extended Test Drive</strong>", "agent");
                     chatState = 2;
-                }, 500);
+                });
             }
         }
 
@@ -291,39 +329,37 @@
 
             if (chatState === 2) {
                 chatState = 3;
-                setTimeout(() => {
+                showTyping(2000, () => {
                     addMessage("Here are some recommended vehicles based on your interests:", "agent");
                     
-                    // Sequence the images
-                    setTimeout(() => addMessage("https://i.imgur.com/GjY2X84.png", "agent", true), 800); // Corsair
-                    setTimeout(() => addMessage("https://i.imgur.com/7YV6GvB.png", "agent", true), 1600); // Navigator
+                    // Staggered image reveals
+                    setTimeout(() => addMessage("https://i.imgur.com/GjY2X84.png", "agent", true), 600); 
+                    setTimeout(() => addMessage("https://i.imgur.com/7YV6GvB.png", "agent", true), 1400); 
                     setTimeout(() => {
-                        addMessage("https://i.imgur.com/49mN0Yx.png", "agent", true); // MKZ
+                        addMessage("https://i.imgur.com/49mN0Yx.png", "agent", true); 
                         setTimeout(() => {
-                            addMessage("<a href='#'>Click to explore more inventory</a>", "agent");
+                            addMessage("<a href='#' style='color:#007aff'>Click to explore more inventory</a>", "agent");
                             chatState = 4;
                         }, 800);
-                    }, 2400);
-                }, 1000);
+                    }, 2200);
+                });
             } 
             else if (chatState === 4) {
                 chatState = 5;
-                setTimeout(() => {
+                showTyping(2000, () => {
                     addMessage("Gotcha! I'm going to connect you with one of our human team members who can answer your questions. Hang tight, they'll be right with you in this chat!", "agent");
                     hotspotBottom.style.display = 'block';
-                }, 1000);
+                });
             }
         });
 
         function showSarahReply() {
             if (chatState === 5) {
                 hotspotBottom.style.display = 'none';
-                typingIndicator.style.display = 'block';
-                setTimeout(() => {
-                    typingIndicator.style.display = 'none';
+                showTyping(2000, () => {
                     addMessage("Hello, I'm Sarah. I see you have some finance and insurance questions. How can I help?", "agent");
                     chatState = 6;
-                }, 1500);
+                });
             }
         }
     </script>
